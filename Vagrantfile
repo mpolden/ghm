@@ -3,7 +3,8 @@
 
 Vagrant.configure("2") do |config|
   config.vm.box = "chef/debian-7.4"
-  config.vm.synced_folder ".", "/vagrant", type: "rsync"
+  config.vm.synced_folder ".", "/vagrant", type: "rsync",
+      rsync__args: ["--verbose", "--archive", "-z"]
   config.ssh.forward_agent = true
   config.vm.provider :virtualbox do |vb|
     vb.customize ["modifyvm", :id, "--memory", "1024"]
