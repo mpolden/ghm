@@ -3,7 +3,7 @@ package main
 import (
     "encoding/json"
     "fmt"
-    "github.com/martinp/docopt-go"
+    "github.com/docopt/docopt-go"
     "io/ioutil"
     "log"
     "net/http"
