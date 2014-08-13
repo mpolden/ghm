@@ -17,10 +17,12 @@ import (
 type Client struct {
 	Username string
 	Path     string
+	SkipFork bool
 }
 
 type Repo struct {
 	Name string
+	Fork bool
 }
 
 func findNextPage(link string) int {
@@ -72,6 +74,10 @@ func (c *Client) GetAllRepos() []Repo {
 
 func (c *Client) Run() {
 	for _, repo := range c.GetAllRepos() {
+		if c.SkipFork && repo.Fork {
+			fmt.Printf("skipping %+v\n", repo)
+			continue
+		}
 		if !repo.IsExist(c.Path) {
 			fmt.Printf("Not found: %s\n", repo.Name)
 		}
@@ -94,16 +100,22 @@ func main() {
 	usage := `Check if local copies of GitHub repos exists in given path.
 
     Usage:
-      check-repo <username> <path>
+      check-repo [-s] <username> <path>
       check-repo -h | --help
 
     Options:
-      -h --help             Show help.`
+      -h --help             Show help
+      -s --skip-fork        Skip forked repositories`
 
 	arguments, _ := docopt.Parse(usage, nil, true, "", false)
+	skipFork := arguments["--skip-fork"].(bool)
 	username := arguments["<username>"].(string)
 	path := arguments["<path>"].(string)
 
-	c := Client{Username: username, Path: path}
+	c := Client{
+		Username: username,
+		Path:     path,
+		SkipFork: skipFork,
+	}
 	c.Run()
 }

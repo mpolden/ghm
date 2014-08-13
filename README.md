@@ -6,17 +6,18 @@ path(s).
 ## Usage
 
 ```
-$ ./check-repo -h
+$ check-repo -h
 Check if local copies of GitHub repos exists in given path.
 
     Usage:
-      check-repo <username> <path>
+      check-repo [-s] <username> <path>
       check-repo -h | --help
 
     Options:
-      -h --help             Show help.
+      -h --help             Show help
+      -s --skip-fork        Skip forked repositories
 ```
 
-## Examples
+## Example
 
-`check-repo martinp /home/martin/git`
+`$ check-repo martinp /home/martin/git`
