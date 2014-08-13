@@ -4,7 +4,7 @@ NAME=check-repo
 all: test build
 
 fmt:
-	gofmt -tabs=false -tabwidth=4 -w=true *.go
+	gofmt -w=true *.go
 
 deps:
 	go get -u github.com/docopt/docopt-go
