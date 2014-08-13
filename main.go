@@ -75,7 +75,6 @@ func (c *Client) GetAllRepos() []Repo {
 func (c *Client) Run() {
 	for _, repo := range c.GetAllRepos() {
 		if c.SkipFork && repo.Fork {
-			fmt.Printf("skipping %+v\n", repo)
 			continue
 		}
 		if !repo.IsExist(c.Path) {
