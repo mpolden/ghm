@@ -14,12 +14,12 @@ import (
 )
 
 type CLI struct {
-	GitPath string `short:"g" long:"git" description:"Path to git executable" default:"git"`
+	GitPath string `short:"g" long:"git" description:"Path to git executable" value-name:"PATH" default:"git"`
 	Quiet   bool   `short:"q" long:"quiet" description:"Only print errors"`
-	Dryrun  bool   `short:"n" long:"dryrun" description:"Print what would be done and exit"`
+	Dryrun  bool   `short:"n" long:"dryrun" description:"Print commands that would be run and exit"`
 	Args    struct {
-		Username string `description:"GitHub username" positional-arg-name:"USER"`
-		Path     string `description:"Path where repositories should be mirrored" positional-arg-name:"PATH"`
+		Username string `description:"GitHub username" positional-arg-name:"github-user"`
+		Path     string `description:"Path where repositories should be mirrored" positional-arg-name:"path"`
 	} `positional-args:"yes" required:"yes"`
 }
 
