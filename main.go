@@ -23,12 +23,6 @@ type CLI struct {
 	} `positional-args:"yes" required:"yes"`
 }
 
-func (c *CLI) Log(format string, v ...interface{}) {
-	if !c.Quiet {
-		log.Printf(format, v...)
-	}
-}
-
 func (c *CLI) Run(cmd *exec.Cmd) error {
 	if c.Dryrun {
 		fmt.Printf("Command=%q WorkDir=%q\n", strings.Join(cmd.Args, " "), cmd.Dir)
@@ -65,12 +59,10 @@ func main() {
 	for _, r := range repos {
 		localDir := cli.localDir(*r.Name)
 		if _, err := os.Stat(localDir); os.IsNotExist(err) {
-			cli.Log("%s does not exist, mirroring", localDir)
 			if err := cli.Run(g.Mirror(*r.SSHURL, localDir)); err != nil {
 				log.Fatal(err)
 			}
 		} else {
-			cli.Log("%s already exists, updating", localDir)
 			if err := cli.Run(g.Update(localDir)); err != nil {
 				log.Fatal(err)
 			}

@@ -10,7 +10,7 @@ vet:
 	go vet 2> /dev/null; if [ $$? -eq 3 ]; then \
 		go get -v golang.org/x/tools/cmd/vet; \
 	fi
-	go tool vet -printf=false .
+	go vet ./...
 
 deps:
 	go get -d -v ./...
