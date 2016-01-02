@@ -1,19 +1,19 @@
-PREFIX ?= /usr/local
-NAME=check-repo
-
-all: test build
+all: deps test vet install
 
 fmt:
-	gofmt -w=true *.go
-
-deps:
-	go get -u github.com/docopt/docopt-go
-
-build:
-	go build -o $(NAME) main.go
+	go fmt ./...
 
 test:
-	go test
+	go test ./...
+
+vet:
+	go vet 2> /dev/null; if [ $$? -eq 3 ]; then \
+		go get -v golang.org/x/tools/cmd/vet; \
+	fi
+	go vet ./...
+
+deps:
+	go get -d -v ./...
 
 install:
-	cp $(NAME) $(PREFIX)/bin/$(NAME)
+	go install
