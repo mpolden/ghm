@@ -27,12 +27,12 @@ func (g *Git) command(args ...string) *exec.Cmd {
 	return cmd
 }
 
-func (g *Git) Mirror(repoURL string, localDir string) *exec.Cmd {
-	return g.command("clone", "--mirror", "--quiet", repoURL, localDir)
+func (g *Git) Mirror(repoURL, localDir string) *exec.Cmd {
+	return g.command("clone", "--mirror", repoURL, localDir)
 }
 
 func (g *Git) Update(localDir string) *exec.Cmd {
-	cmd := g.command("fetch", "--prune", "--quiet")
+	cmd := g.command("fetch", "--prune")
 	cmd.Dir = localDir
 	return cmd
 }
