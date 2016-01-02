@@ -60,6 +60,5 @@ func main() {
 				log.Fatal(err)
 			}
 		}
-		break
 	}
 }
