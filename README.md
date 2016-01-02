@@ -1,23 +1,24 @@
-# check-repo
+# git-mirror
 
-A tool that allows you to run a command when a file changes in the given
-path(s).
+[![Build Status](https://travis-ci.org/martinp/git-mirror.svg)](https://travis-ci.org/martinp/git-mirror)
+
+A backup tool for GitHub repositories.
 
 ## Usage
 
 ```
-$ check-repo -h
-Check if local copies of GitHub repos exists in given path.
+Usage:
+  git-mirror [OPTIONS] USER PATH
 
-    Usage:
-      check-repo [-s] <username> <path>
-      check-repo -h | --help
+Application Options:
+  -g, --git=   Path to git executable (default: git)
+  -q, --quiet  Only print errors
 
-    Options:
-      -h --help             Show help
-      -s --skip-fork        Skip forked repositories
+Help Options:
+  -h, --help   Show this help message
+
+Arguments:
+  USER:        GitHub username
+  PATH:        Path where repositories should be mirrored
 ```
 
-## Example
-
-`$ check-repo martinp /home/martin/git`
