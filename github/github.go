@@ -1,6 +1,10 @@
 package github
 
-import "github.com/google/go-github/github"
+import (
+	"fmt"
+
+	"github.com/google/go-github/github"
+)
 
 type Client struct {
 	*github.Client
@@ -23,4 +27,16 @@ func (c *Client) ListAllRepositories(username string) ([]github.Repository, erro
 		done = response.NextPage == 0
 	}
 	return repos, nil
+}
+
+func CloneURL(protocol string, r github.Repository) (string, error) {
+	switch protocol {
+	case "https":
+		return *r.CloneURL, nil
+	case "git":
+		return *r.GitURL, nil
+	case "ssh":
+		return *r.SSHURL, nil
+	}
+	return "", fmt.Errorf("unknown protocol: %s", protocol)
 }

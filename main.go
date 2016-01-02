@@ -5,7 +5,6 @@ import (
 	"log"
 	"os"
 	"os/exec"
-	"path/filepath"
 	"strings"
 
 	flags "github.com/jessevdk/go-flags"
@@ -14,10 +13,11 @@ import (
 )
 
 type CLI struct {
-	GitPath string `short:"g" long:"git" description:"Path to git executable" value-name:"PATH" default:"git"`
-	Quiet   bool   `short:"q" long:"quiet" description:"Only print errors"`
-	Dryrun  bool   `short:"n" long:"dryrun" description:"Print commands that would be run and exit"`
-	Args    struct {
+	GitPath  string `short:"g" long:"git" description:"Path to git executable" value-name:"PATH" default:"git"`
+	Quiet    bool   `short:"q" long:"quiet" description:"Only print errors"`
+	Dryrun   bool   `short:"n" long:"dryrun" description:"Print commands that would be run and exit"`
+	Protocol string `short:"p" long:"protocol" description:"Use the given protocol when mirroring" choice:"ssh" choice:"https" choice:"git" default:"ssh" `
+	Args     struct {
 		Username string `description:"GitHub username" positional-arg-name:"github-user"`
 		Path     string `description:"Path where repositories should be mirrored" positional-arg-name:"path"`
 	} `positional-args:"yes" required:"yes"`
@@ -32,10 +32,6 @@ func (c *CLI) Run(cmd *exec.Cmd) error {
 		return err
 	}
 	return nil
-}
-
-func (c *CLI) localDir(name string) string {
-	return filepath.Join(c.Args.Path, name+".git")
 }
 
 func main() {
@@ -57,15 +53,13 @@ func main() {
 	}
 
 	for _, r := range repos {
-		localDir := cli.localDir(*r.Name)
-		if _, err := os.Stat(localDir); os.IsNotExist(err) {
-			if err := cli.Run(g.Mirror(*r.SSHURL, localDir)); err != nil {
-				log.Fatal(err)
-			}
-		} else {
-			if err := cli.Run(g.Update(localDir)); err != nil {
-				log.Fatal(err)
-			}
+		repoURL, err := github.CloneURL(cli.Protocol, r)
+		if err != nil {
+			log.Fatal(err)
+		}
+		localDir := git.LocalDir(cli.Args.Path, *r.Name)
+		if err := cli.Run(g.Sync(repoURL, localDir)); err != nil {
+			log.Fatal(err)
 		}
 	}
 }

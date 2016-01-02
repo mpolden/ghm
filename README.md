@@ -8,17 +8,18 @@ A backup tool for GitHub repositories.
 ```
 $ git-mirror -h
 Usage:
-  git-mirror [OPTIONS] USER PATH
+  git-mirror [OPTIONS] github-user path
 
 Application Options:
-  -g, --git=    Path to git executable (default: git)
-  -q, --quiet   Only print errors
-  -n, --dryrun  Print what would be done and exit
+  -g, --git=PATH                    Path to git executable (default: git)
+  -q, --quiet                       Only print errors
+  -n, --dryrun                      Print commands that would be run and exit
+  -p, --protocol=[ssh|https|git]    Use the given protocol when mirroring (default: ssh)
 
 Help Options:
-  -h, --help    Show this help message
+  -h, --help                        Show this help message
 
 Arguments:
-  USER:         GitHub username
-  PATH:         Path where repositories should be mirrored
+  github-user:                      GitHub username
+  path:                             Path where repositories should be mirrored
 ```
