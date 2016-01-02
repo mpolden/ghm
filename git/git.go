@@ -27,19 +27,12 @@ func (g *Git) command(args ...string) *exec.Cmd {
 	return cmd
 }
 
-func (g *Git) Mirror(repoURL string, localDir string) error {
-	cmd := g.command("clone", "--mirror", "--quiet", repoURL, localDir)
-	if err := cmd.Run(); err != nil {
-		return err
-	}
-	return nil
+func (g *Git) Mirror(repoURL string, localDir string) *exec.Cmd {
+	return g.command("clone", "--mirror", "--quiet", repoURL, localDir)
 }
 
-func (g *Git) Update(localDir string) error {
+func (g *Git) Update(localDir string) *exec.Cmd {
 	cmd := g.command("fetch", "--prune", "--quiet")
 	cmd.Dir = localDir
-	if err := cmd.Run(); err != nil {
-		return err
-	}
-	return nil
+	return cmd
 }

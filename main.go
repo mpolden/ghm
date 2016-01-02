@@ -1,9 +1,12 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"os"
+	"os/exec"
 	"path/filepath"
+	"strings"
 
 	flags "github.com/jessevdk/go-flags"
 	"github.com/martinp/git-mirror/git"
@@ -13,6 +16,7 @@ import (
 type CLI struct {
 	GitPath string `short:"g" long:"git" description:"Path to git executable" default:"git"`
 	Quiet   bool   `short:"q" long:"quiet" description:"Only print errors"`
+	Dryrun  bool   `short:"n" long:"dryrun" description:"Print what would be done and exit"`
 	Args    struct {
 		Username string `description:"GitHub username" positional-arg-name:"USER"`
 		Path     string `description:"Path where repositories should be mirrored" positional-arg-name:"PATH"`
@@ -23,6 +27,17 @@ func (c *CLI) Log(format string, v ...interface{}) {
 	if !c.Quiet {
 		log.Printf(format, v...)
 	}
+}
+
+func (c *CLI) Run(cmd *exec.Cmd) error {
+	if c.Dryrun {
+		fmt.Printf("Command=%q WorkDir=%q\n", strings.Join(cmd.Args, " "), cmd.Dir)
+		return nil
+	}
+	if err := cmd.Run(); err != nil {
+		return err
+	}
+	return nil
 }
 
 func (c *CLI) localDir(name string) string {
@@ -51,12 +66,12 @@ func main() {
 		localDir := cli.localDir(*r.Name)
 		if _, err := os.Stat(localDir); os.IsNotExist(err) {
 			cli.Log("%s does not exist, mirroring", localDir)
-			if err := g.Mirror(*r.SSHURL, localDir); err != nil {
+			if err := cli.Run(g.Mirror(*r.SSHURL, localDir)); err != nil {
 				log.Fatal(err)
 			}
 		} else {
 			cli.Log("%s already exists, updating", localDir)
-			if err := g.Update(localDir); err != nil {
+			if err := cli.Run(g.Update(localDir)); err != nil {
 				log.Fatal(err)
 			}
 		}
