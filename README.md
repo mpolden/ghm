@@ -1,14 +1,14 @@
-# git-mirror
+# ghm
 
-[![Build Status](https://travis-ci.org/martinp/git-mirror.svg)](https://travis-ci.org/martinp/git-mirror)
+[![Build Status](https://travis-ci.org/martinp/ghm.svg)](https://travis-ci.org/martinp/ghm)
 
 A backup tool for GitHub repositories.
 
 ## Usage
 ```
-$ git-mirror -h
+$ ghm -h
 Usage:
-  git-mirror [OPTIONS] github-user path
+  ghm [OPTIONS] github-user path
 
 Application Options:
   -g, --git=PATH                    Path to git executable (default: git)

@@ -8,8 +8,8 @@ import (
 	"strings"
 
 	flags "github.com/jessevdk/go-flags"
-	"github.com/martinp/git-mirror/git"
-	"github.com/martinp/git-mirror/github"
+	"github.com/martinp/ghm/git"
+	"github.com/martinp/ghm/github"
 )
 
 type CLI struct {
