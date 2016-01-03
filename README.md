@@ -15,6 +15,7 @@ Application Options:
   -q, --quiet                       Only print errors
   -n, --dryrun                      Print commands that would be run and exit
   -p, --protocol=[ssh|https|git]    Use the given protocol when mirroring (default: ssh)
+  -s, --skip-fork                   Skip forked repositories
 
 Help Options:
   -h, --help                        Show this help message
