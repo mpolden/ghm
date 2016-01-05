@@ -37,9 +37,7 @@ func (g *Git) Mirror(repoURL, localDir string) *exec.Cmd {
 }
 
 func (g *Git) Update(localDir string) *exec.Cmd {
-	cmd := g.command("fetch", "--prune")
-	cmd.Dir = localDir
-	return cmd
+	return g.command("-C", localDir, "fetch", "--prune")
 }
 
 func (g *Git) Sync(repoURL, localDir string) *exec.Cmd {

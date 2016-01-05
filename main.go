@@ -26,7 +26,7 @@ type CLI struct {
 
 func (c *CLI) Run(cmd *exec.Cmd) error {
 	if c.Dryrun {
-		fmt.Printf("Command=%q WorkDir=%q\n", strings.Join(cmd.Args, " "), cmd.Dir)
+		fmt.Println(strings.Join(cmd.Args, " "))
 		return nil
 	}
 	if err := cmd.Run(); err != nil {
