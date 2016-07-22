@@ -24,7 +24,7 @@ func TestCloneURL(t *testing.T) {
 		{"ssh", sshURL},
 	}
 	for _, tt := range tests {
-		got, err := CloneURL(tt.in, r)
+		got, err := CloneURL(tt.in, &r)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -32,7 +32,7 @@ func TestCloneURL(t *testing.T) {
 			t.Errorf("got %s for %s, want %s", got, tt.in, tt.out)
 		}
 	}
-	if _, err := CloneURL("", r); err == nil {
+	if _, err := CloneURL("", &r); err == nil {
 		t.Error("want error")
 	}
 }

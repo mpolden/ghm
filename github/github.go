@@ -14,9 +14,9 @@ func New() *Client {
 	return &Client{github.NewClient(nil)}
 }
 
-func (c *Client) ListAllRepositories(username string) ([]github.Repository, error) {
+func (c *Client) ListAllRepositories(username string) ([]*github.Repository, error) {
 	opt := &github.RepositoryListOptions{Type: "owner", ListOptions: github.ListOptions{PerPage: 100}}
-	var repos []github.Repository
+	var repos []*github.Repository
 	for done := false; !done; {
 		rs, response, err := c.Repositories.List(username, opt)
 		if err != nil {
@@ -29,7 +29,7 @@ func (c *Client) ListAllRepositories(username string) ([]github.Repository, erro
 	return repos, nil
 }
 
-func CloneURL(protocol string, r github.Repository) (string, error) {
+func CloneURL(protocol string, r *github.Repository) (string, error) {
 	switch protocol {
 	case "https":
 		return *r.CloneURL, nil

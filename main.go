@@ -42,7 +42,7 @@ func (c *CLI) run(cmd *exec.Cmd) error {
 	return nil
 }
 
-func (c *CLI) sync(g *git.Git, r github.Repository) error {
+func (c *CLI) sync(g *git.Git, r *github.Repository) error {
 	repoURL, err := gh.CloneURL(c.Protocol, r)
 	if err != nil {
 		return err
@@ -55,14 +55,14 @@ func (c *CLI) sync(g *git.Git, r github.Repository) error {
 	return nil
 }
 
-func (c *CLI) syncAll(g *git.Git, repos []github.Repository) {
+func (c *CLI) syncAll(g *git.Git, repos []*github.Repository) {
 	sem := make(chan bool, c.Concurrency)
 	for _, r := range repos {
 		if c.SkipFork && *r.Fork {
 			continue
 		}
 		sem <- true
-		go func(r github.Repository) {
+		go func(r *github.Repository) {
 			defer func() { <-sem }()
 			if err := c.sync(g, r); err != nil {
 				log.Fatal(err)
