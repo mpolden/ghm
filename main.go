@@ -10,8 +10,8 @@ import (
 
 	"github.com/google/go-github/github"
 	flags "github.com/jessevdk/go-flags"
-	"github.com/martinp/ghm/git"
-	gh "github.com/martinp/ghm/github"
+	"github.com/mpolden/ghm/git"
+	gh "github.com/mpolden/ghm/github"
 )
 
 type CLI struct {
