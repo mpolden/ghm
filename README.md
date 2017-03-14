@@ -1,6 +1,6 @@
 # ghm
 
-[![Build Status](https://travis-ci.org/martinp/ghm.svg)](https://travis-ci.org/martinp/ghm)
+[![Build Status](https://travis-ci.org/mpolden/ghm.svg)](https://travis-ci.org/mpolden/ghm)
 
 A backup tool for GitHub repositories.
 
