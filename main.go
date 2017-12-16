@@ -49,10 +49,7 @@ func (c *CLI) sync(g *git.Git, r *github.Repository) error {
 	}
 	localDir := git.LocalDir(c.Args.Path, *r.Name)
 	syncCmd := g.Sync(repoURL, localDir)
-	if err := c.run(syncCmd); err != nil {
-		return err
-	}
-	return nil
+	return c.run(syncCmd)
 }
 
 func (c *CLI) syncAll(g *git.Git, repos []*github.Repository) {
