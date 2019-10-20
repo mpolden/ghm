@@ -8,7 +8,8 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/google/go-github/github"
+	"github.com/google/go-github/v28/github"
+
 	flags "github.com/jessevdk/go-flags"
 	"github.com/mpolden/ghm/git"
 	gh "github.com/mpolden/ghm/github"
