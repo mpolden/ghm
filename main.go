@@ -16,13 +16,14 @@ import (
 )
 
 type CLI struct {
-	GitPath     string `short:"g" long:"git" description:"Path to git executable" value-name:"PATH" default:"git"`
-	Quiet       bool   `short:"q" long:"quiet" description:"Only print errors"`
-	Dryrun      bool   `short:"n" long:"dryrun" description:"Print commands that would be run and exit"`
-	Protocol    string `short:"p" long:"protocol" description:"Use the given protocol when mirroring" choice:"ssh" choice:"https" choice:"git" default:"ssh"`
-	SkipFork    bool   `short:"s" long:"skip-fork" description:"Skip forked repositories"`
-	Concurrency int    `short:"c" long:"concurrency" description:"Mirror COUNT repositories concurrently" value-name:"COUNT" default:"1"`
-	Args        struct {
+	GitPath      string `short:"g" long:"git" description:"Path to git executable" value-name:"PATH" default:"git"`
+	Quiet        bool   `short:"q" long:"quiet" description:"Only print errors"`
+	Dryrun       bool   `short:"n" long:"dryrun" description:"Print commands that would be run and exit"`
+	Protocol     string `short:"p" long:"protocol" description:"Use the given protocol when mirroring" choice:"ssh" choice:"https" choice:"git" default:"ssh"`
+	SkipFork     bool   `short:"s" long:"skip-fork" description:"Skip forked repositories"`
+	SkipArchived bool   `short:"a" long:"skip-archived" description:"Skip archived repositories"`
+	Concurrency  int    `short:"c" long:"concurrency" description:"Mirror COUNT repositories concurrently" value-name:"COUNT" default:"1"`
+	Args         struct {
 		Username string `description:"GitHub username" positional-arg-name:"github-user"`
 		Path     string `description:"Path where repositories should be mirrored" positional-arg-name:"path"`
 	} `positional-args:"yes" required:"yes"`
@@ -59,6 +60,9 @@ func (c *CLI) syncAll(g *git.Git, repos []*github.Repository) {
 		if c.SkipFork && *r.Fork {
 			continue
 		}
+		if c.SkipArchived && *r.Archived {
+			continue
+		}
 		sem <- true
 		go func(r *github.Repository) {
 			defer func() { <-sem }()
@@ -74,15 +78,18 @@ func (c *CLI) syncAll(g *git.Git, repos []*github.Repository) {
 }
 
 func main() {
+	log.SetPrefix("ghm: ")
+	log.SetFlags(log.Lshortfile)
+
 	var cli CLI
-	_, err := flags.ParseArgs(&cli, os.Args[1:])
-	if err != nil {
+	p := flags.NewParser(&cli, flags.HelpFlag|flags.PassDoubleDash)
+	if _, err := p.Parse(); err != nil {
+		fmt.Println(err)
 		os.Exit(1)
 	}
 
 	if cli.Concurrency < 1 {
-		fmt.Fprintln(os.Stderr, "concurrency level must be >= 1")
-		os.Exit(1)
+		log.Fatal("concurrency level must be positive")
 	}
 
 	gh := gh.New()
