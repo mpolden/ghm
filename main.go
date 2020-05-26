@@ -16,7 +16,6 @@ import (
 )
 
 type CLI struct {
-	GitPath      string `short:"g" long:"git" description:"Path to git executable" value-name:"PATH" default:"git"`
 	Quiet        bool   `short:"q" long:"quiet" description:"Only print errors"`
 	Dryrun       bool   `short:"n" long:"dryrun" description:"Print commands that would be run and exit"`
 	Protocol     string `short:"p" long:"protocol" description:"Use the given protocol when mirroring" choice:"ssh" choice:"https" choice:"git" default:"ssh"`
@@ -98,7 +97,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	g, err := git.New(cli.GitPath, !cli.Quiet)
+	g, err := git.New(!cli.Quiet)
 	if err != nil {
 		log.Fatal(err)
 	}

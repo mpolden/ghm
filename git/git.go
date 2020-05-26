@@ -11,8 +11,8 @@ type Git struct {
 	inheritIO bool
 }
 
-func New(path string, inheritIO bool) (*Git, error) {
-	p, err := exec.LookPath(path)
+func New(inheritIO bool) (*Git, error) {
+	p, err := exec.LookPath("git")
 	if err != nil {
 		return nil, err
 	}
