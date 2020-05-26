@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"log"
 	"os"
@@ -10,30 +11,26 @@ import (
 
 	"github.com/google/go-github/v28/github"
 
-	flags "github.com/jessevdk/go-flags"
 	"github.com/mpolden/ghm/git"
 	gh "github.com/mpolden/ghm/github"
 )
 
-type CLI struct {
-	Quiet        bool   `short:"q" long:"quiet" description:"Only print errors"`
-	Dryrun       bool   `short:"n" long:"dryrun" description:"Print commands that would be run and exit"`
-	Protocol     string `short:"p" long:"protocol" description:"Use the given protocol when mirroring" choice:"ssh" choice:"https" choice:"git" default:"ssh"`
-	SkipFork     bool   `short:"s" long:"skip-fork" description:"Skip forked repositories"`
-	SkipArchived bool   `short:"a" long:"skip-archived" description:"Skip archived repositories"`
-	Concurrency  int    `short:"c" long:"concurrency" description:"Mirror COUNT repositories concurrently" value-name:"COUNT" default:"1"`
-	Args         struct {
-		Username string `description:"GitHub username" positional-arg-name:"github-user"`
-		Path     string `description:"Path where repositories should be mirrored" positional-arg-name:"path"`
-	} `positional-args:"yes" required:"yes"`
-	mu sync.Mutex
+type syncer struct {
+	quiet        bool
+	protocol     string
+	dryrun       bool
+	concurrency  int
+	skipFork     bool
+	skipArchived bool
+	localPath    string
+	mu           sync.Mutex
 }
 
-func (c *CLI) run(cmd *exec.Cmd) error {
-	if c.Dryrun {
+func (s *syncer) run(cmd *exec.Cmd) error {
+	if s.dryrun {
 		// Prevent overlapping output
-		c.mu.Lock()
-		defer c.mu.Unlock()
+		s.mu.Lock()
+		defer s.mu.Unlock()
 		fmt.Println(strings.Join(cmd.Args, " "))
 		return nil
 	}
@@ -43,29 +40,29 @@ func (c *CLI) run(cmd *exec.Cmd) error {
 	return nil
 }
 
-func (c *CLI) sync(g *git.Git, r *github.Repository) error {
-	repoURL, err := gh.CloneURL(c.Protocol, r)
+func (s *syncer) sync(g *git.Git, r *github.Repository) error {
+	repoURL, err := gh.CloneURL(s.protocol, r)
 	if err != nil {
 		return err
 	}
-	localDir := git.LocalDir(c.Args.Path, *r.Name)
+	localDir := git.LocalDir(s.localPath, *r.Name)
 	syncCmd := g.Sync(repoURL, localDir)
-	return c.run(syncCmd)
+	return s.run(syncCmd)
 }
 
-func (c *CLI) syncAll(g *git.Git, repos []*github.Repository) {
-	sem := make(chan bool, c.Concurrency)
+func (s *syncer) syncAll(g *git.Git, repos []*github.Repository) {
+	sem := make(chan bool, s.concurrency)
 	for _, r := range repos {
-		if c.SkipFork && *r.Fork {
+		if s.skipFork && *r.Fork {
 			continue
 		}
-		if c.SkipArchived && *r.Archived {
+		if s.skipArchived && *r.Archived {
 			continue
 		}
 		sem <- true
 		go func(r *github.Repository) {
 			defer func() { <-sem }()
-			if err := c.sync(g, r); err != nil {
+			if err := s.sync(g, r); err != nil {
 				log.Fatal(err)
 			}
 		}(r)
@@ -80,27 +77,50 @@ func main() {
 	log.SetPrefix("ghm: ")
 	log.SetFlags(log.Lshortfile)
 
-	var cli CLI
-	p := flags.NewParser(&cli, flags.HelpFlag|flags.PassDoubleDash)
-	if _, err := p.Parse(); err != nil {
-		fmt.Println(err)
-		os.Exit(1)
+	flag.Usage = func() {
+		out := flag.CommandLine.Output()
+		fmt.Fprintf(out, "Usage of %s:\n", os.Args[0])
+		flag.PrintDefaults()
+		fmt.Fprintln(out, "\nArguments:\n  <github-user>\tGitHub username")
+		fmt.Fprintln(out, "  <path>\tPath where repositories should be mirrored")
 	}
+	quiet := flag.Bool("q", false, "Only print errors")
+	dryrun := flag.Bool("n", false, "Print commands that would be run and exit")
+	protocol := flag.String("p", "ssh", "Protocol to use for mirroring [ssh|https|git]")
+	skipFork := flag.Bool("s", false, "Skip forked repositories")
+	skipArchived := flag.Bool("a", false, "Skip archived repositories")
+	concurrency := flag.Int("c", 1, "Number of repositories to mirror concurrently")
+	flag.Parse()
 
-	if cli.Concurrency < 1 {
+	if *concurrency < 1 {
 		log.Fatal("concurrency level must be positive")
 	}
 
+	args := flag.Args()
+	if len(args) < 2 {
+		flag.Usage()
+	}
+	username := args[0]
+	path := args[1]
+
 	gh := gh.New()
-	repos, err := gh.ListAllRepositories(cli.Args.Username)
+	repos, err := gh.ListAllRepositories(username)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	g, err := git.New(!cli.Quiet)
+	g, err := git.New(!*quiet)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	cli.syncAll(g, repos)
+	syncer := syncer{
+		dryrun:       *dryrun,
+		protocol:     *protocol,
+		skipFork:     *skipFork,
+		skipArchived: *skipArchived,
+		concurrency:  *concurrency,
+		localPath:    path,
+	}
+	syncer.syncAll(g, repos)
 }

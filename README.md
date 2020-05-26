@@ -39,21 +39,17 @@ Speed up mirroring by running git commands concurrently:
 ## Usage
 ```
 $ ghm -h
-Usage:
-  ghm [OPTIONS] github-user path
-
-Application Options:
-  -g, --git=PATH                    Path to git executable (default: git)
-  -q, --quiet                       Only print errors
-  -n, --dryrun                      Print commands that would be run and exit
-  -p, --protocol=[ssh|https|git]    Use the given protocol when mirroring (default: ssh)
-  -s, --skip-fork                   Skip forked repositories
-  -c, --concurrency=COUNT           Mirror COUNT repositories concurrently (default: 1)
-
-Help Options:
-  -h, --help                        Show this help message
+Usage of ghm:
+  -a	Skip archived repositories
+  -c int
+    	Number of repositories to mirror concurrently (default 1)
+  -n	Print commands that would be run and exit
+  -p string
+    	Protocol to use for mirroring [ssh|https|git] (default "ssh")
+  -q	Only print errors
+  -s	Skip forked repositories
 
 Arguments:
-  github-user:                      GitHub username
-  path:                             Path where repositories should be mirrored
+  <github-user>	GitHub username
+  <path>	Path where repositories should be mirrored
 ```
