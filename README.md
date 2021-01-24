@@ -1,6 +1,6 @@
 # ghm
 
-[![Build Status](https://travis-ci.org/mpolden/ghm.svg)](https://travis-ci.org/mpolden/ghm)
+![Build Status](https://github.com/mpolden/ghm/workflows/ci/badge.svg)
 
 A backup tool for GitHub repositories.
 
