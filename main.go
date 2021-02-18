@@ -8,11 +8,6 @@ import (
 	"os/exec"
 	"strings"
 	"sync"
-
-	"github.com/google/go-github/v28/github"
-
-	"github.com/mpolden/ghm/git"
-	gh "github.com/mpolden/ghm/github"
 )
 
 type syncer struct {
@@ -40,27 +35,32 @@ func (s *syncer) run(cmd *exec.Cmd) error {
 	return nil
 }
 
-func (s *syncer) sync(g *git.Git, r *github.Repository) error {
-	repoURL, err := gh.CloneURL(s.protocol, r)
-	if err != nil {
-		return err
+func (s *syncer) sync(g *git, r repository) error {
+	var url string
+	switch s.protocol {
+	case "ssh":
+		url = r.SSHURL
+	case "git":
+		url = r.GitURL
+	default:
+		url = r.CloneURL
 	}
-	localDir := git.LocalDir(s.localPath, *r.Name)
-	syncCmd := g.Sync(repoURL, localDir)
+	localDir := repositoryPath(s.localPath, r.Name)
+	syncCmd := g.sync(url, localDir)
 	return s.run(syncCmd)
 }
 
-func (s *syncer) syncAll(g *git.Git, repos []*github.Repository) {
+func (s *syncer) syncAll(g *git, repos []repository) {
 	sem := make(chan bool, s.concurrency)
 	for _, r := range repos {
-		if s.skipFork && *r.Fork {
+		if s.skipFork && r.Fork {
 			continue
 		}
-		if s.skipArchived && *r.Archived {
+		if s.skipArchived && r.Archived {
 			continue
 		}
 		sem <- true
-		go func(r *github.Repository) {
+		go func(r repository) {
 			defer func() { <-sem }()
 			if err := s.sync(g, r); err != nil {
 				log.Fatal(err)
@@ -76,7 +76,6 @@ func (s *syncer) syncAll(g *git.Git, repos []*github.Repository) {
 func main() {
 	log.SetPrefix("ghm: ")
 	log.SetFlags(log.Lshortfile)
-
 	flag.Usage = func() {
 		out := flag.CommandLine.Output()
 		fmt.Fprintf(out, "Usage of %s:\n", os.Args[0])
@@ -86,34 +85,26 @@ func main() {
 	}
 	quiet := flag.Bool("q", false, "Only print errors")
 	dryrun := flag.Bool("n", false, "Print commands that would be run and exit")
-	protocol := flag.String("p", "ssh", "Protocol to use for mirroring [ssh|https|git]")
+	protocol := flag.String("p", "ssh", "Protocol to use for mirroring [git|https|ssh]")
 	skipFork := flag.Bool("s", false, "Skip forked repositories")
 	skipArchived := flag.Bool("a", false, "Skip archived repositories")
 	concurrency := flag.Int("c", 1, "Number of repositories to mirror concurrently")
 	flag.Parse()
-
-	if *concurrency < 1 {
-		log.Fatal("concurrency level must be positive")
-	}
-
 	args := flag.Args()
 	if len(args) < 2 {
 		flag.Usage()
+		return
 	}
-	username := args[0]
+	if *concurrency < 1 {
+		log.Fatal("invalid concurrency level")
+	}
+
+	g, err := gitCommand(!*quiet)
+	if err != nil {
+		log.Fatal(err)
+	}
+	githubUser := args[0]
 	path := args[1]
-
-	gh := gh.New()
-	repos, err := gh.ListAllRepositories(username)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	g, err := git.New(!*quiet)
-	if err != nil {
-		log.Fatal(err)
-	}
-
 	syncer := syncer{
 		dryrun:       *dryrun,
 		protocol:     *protocol,
@@ -121,6 +112,10 @@ func main() {
 		skipArchived: *skipArchived,
 		concurrency:  *concurrency,
 		localPath:    path,
+	}
+	repos, err := listRepositories(githubUser)
+	if err != nil {
+		log.Fatal(err)
 	}
 	syncer.syncAll(g, repos)
 }

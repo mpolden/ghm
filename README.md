@@ -45,7 +45,7 @@ Usage of ghm:
     	Number of repositories to mirror concurrently (default 1)
   -n	Print commands that would be run and exit
   -p string
-    	Protocol to use for mirroring [ssh|https|git] (default "ssh")
+    	Protocol to use for mirroring [git|https|ssh] (default "ssh")
   -q	Only print errors
   -s	Skip forked repositories
 
