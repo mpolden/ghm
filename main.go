@@ -113,7 +113,7 @@ func main() {
 		concurrency:  *concurrency,
 		localPath:    path,
 	}
-	repos, err := listRepositories(githubUser)
+	repos, err := listAllRepositories(githubUser)
 	if err != nil {
 		log.Fatal(err)
 	}

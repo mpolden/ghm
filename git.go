@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strconv"
 )
 
 type git struct {
@@ -23,8 +24,10 @@ type repository struct {
 	Archived bool   `json:"archived"`
 }
 
-func listRepositories(user string) ([]repository, error) {
-	res, err := http.Get("https://api.github.com/users/" + user + "/repos")
+func listRepositories(user string, page int) ([]repository, error) {
+	// https://docs.github.com/en/rest/reference/repos#list-repositories-for-a-user
+	url := "https://api.github.com/users/" + user + "/repos?per_page=100&page=" + strconv.Itoa(page)
+	res, err := http.Get(url)
 	if err != nil {
 		return nil, err
 	}
@@ -33,6 +36,21 @@ func listRepositories(user string) ([]repository, error) {
 	var repos []repository
 	if err := dec.Decode(&repos); err != nil {
 		return nil, err
+	}
+	return repos, nil
+}
+
+func listAllRepositories(user string) ([]repository, error) {
+	var repos []repository
+	for page := 1; ; page++ {
+		rs, err := listRepositories(user, page)
+		if err != nil {
+			return nil, err
+		}
+		if len(rs) == 0 {
+			break
+		}
+		repos = append(repos, rs...)
 	}
 	return repos, nil
 }
