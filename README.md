@@ -8,7 +8,7 @@ A backup tool for GitHub repositories.
 
 Configure [GOPATH](https://golang.org/doc/code.html#GOPATH) and run:
 
-    $ go get github.com/mpolden/ghm
+    $ go install github.com/mpolden/ghm@latest
 
 ## Examples
 
